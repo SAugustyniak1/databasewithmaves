@@ -1,5 +1,7 @@
 package org.example;
 
+
+
 import java.sql.*;
 import java.util.Scanner;
 
@@ -8,84 +10,157 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
 
-        Scanner scanner = new Scanner(System.in);
-        //(city, phone, addressLine1, country, postalCode, territory)
-        System.out.println("What is your city");
-        String city = scanner.nextLine();
-
-        System.out.println("What is your phone");
-        String phone = scanner.nextLine();
-
-        System.out.println("What is your adress line");
-        String addressLine1 = scanner.nextLine();
-
-        System.out.println("What is your countery");
-        String countrey = scanner.nextLine();
-
-        System.out.println("What is your postal code");
-        String postalCode = scanner.nextLine();
-
-        System.out.println("What is your territory");
-        String territory = scanner.nextLine();
-
-
-
-
-        exampleUpdate(city,phone,addressLine1, countrey, postalCode,territory);
-
-        exampleSelect();
-
+        lunch();
 
 
     }
 
-    public static void exampleSelect() throws Exception{
+    private static void lunch() throws Exception{
+
+        int decision = 10;
+        Scanner scanner = new Scanner(System.in);
+
+
+        while(decision!= -1){
+
+            System.out.println("==================");
+            System.out.println("What do you want to do?");
+            System.out.println("1: Create new office ");
+            System.out.println("2: Show offices ");
+            System.out.println("3: Modify office ");
+            System.out.println("4: Delete office ");
+            System.out.println("0: Exit ");
+
+            decision = scanner.nextInt();
+
+            if(decision == 1 ) {
+                scanner.nextLine();
+                System.out.println("Insert city");
+                String city = scanner.nextLine();
+                System.out.println("Insert phone");
+                String phone = scanner.nextLine();
+                System.out.println("Insert address Line 1");
+                String addressLine1 = scanner.nextLine();
+                System.out.println("Insert country");
+                String country = scanner.nextLine();
+                System.out.println("Insert postal Code");
+                String postalCode = scanner.nextLine();
+                System.out.println("Insert territory");
+                String territory = scanner.nextLine();
+                createOffice(city,phone,addressLine1,country,postalCode,territory);
+            }
+            if(decision == 2){
+                showOffices();
+            }
+            if(decision==3){
+                showOffices();
+                System.out.println("write code number of office you want modify");
+                int officeNumber = scanner.nextInt();
+                scanner.nextLine();
+                System.out.println("Insert city");
+                String city = scanner.nextLine();
+                System.out.println("Insert phone");
+                String phone = scanner.nextLine();
+                System.out.println("Insert address Line 1");
+                String addressLine1 = scanner.nextLine();
+                System.out.println("Insert country");
+                String country = scanner.nextLine();
+                System.out.println("Insert postal Code");
+                String postalCode = scanner.nextLine();
+                System.out.println("Insert territory");
+                String territory = scanner.nextLine();
+                modifyOffice(officeNumber,city,phone,addressLine1,country,postalCode,territory);
+            }
+
+
+
+        }
+    }
+
+    public static void createOffice( String city,
+                                    String phone, String addressLine1,
+                                    String country, String postalCode,
+                                    String territory) throws Exception{
+
         Connection connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/classicmodels", "root", "123456");
 
-        System.out.println(connection);
+        String preparedStatemen = "INSERT INTO offices ( city, phone, addressLine1, country, postalCode, territory)\n" +
+                "VALUES( ?, ?, ?, ?, ?, ?)";
+
+
+        PreparedStatement statement = connection.prepareStatement(preparedStatemen);
+
+        statement.setString(1, city);
+        statement.setString(2, phone);
+        statement.setString(3, addressLine1);
+        statement.setString(4, country);
+        statement.setString(5, postalCode);
+        statement.setString(6, territory);
+
+        statement.executeUpdate();
+        connection.close();
+
+    }
+
+    public static void modifyOffice( int officeCode, String city,
+                                     String phone, String addressLine1,
+                                     String country, String postalCode,
+                                     String territory) throws Exception{
+
+        Connection connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/classicmodels", "root", "123456");
+
+        String preparedStatemen = "UPDATE offices\n" +
+                "SET  city = ?, phone = ?, addressLine1 = ?, country = ?, postalCode = ?, territory = ?\n" +
+                "                WHERE officeCode = ?";
+
+        PreparedStatement statement = connection.prepareStatement(preparedStatemen);
+
+        statement.setString(1, city);
+        statement.setString(2, phone);
+        statement.setString(3, addressLine1);
+        statement.setString(4, country);
+        statement.setString(5, postalCode);
+        statement.setString(6, territory);
+        statement.setInt(7, officeCode);
+
+        statement.executeUpdate();
+        connection.close();
+
+    }
+
+    public static void showOffices() throws Exception{
+
+        Connection connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/classicmodels", "root", "123456");
 
         Statement statement = connection.createStatement();
-
-        ResultSet result = statement.executeQuery("SELECT * FROM offices ORDER BY city DESC");
-
-        result.next();
-
-        String city = result.getString("city");
-        System.out.println(city);
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM offices ORDER BY city DESC");
 
 
-        while(result.next()){
-            long officeCode = result.getLong("officeCOde");
-            city = result.getString("city");
-            System.out.println(city + " " + officeCode);
-        }
+        while (resultSet.next()){
+
+
+            int officeCode  = resultSet.getInt(1);
+            String city  = resultSet.getString(2);
+            String phone  = resultSet.getString(3);
+            String adressLine1  = resultSet.getString(4);
+            String country  = resultSet.getString(5);
+            String postalCode  = resultSet.getString(6);
+            String territory  = resultSet.getString(7);
+
+            System.out.printf("%10d%20s%20s%25s%10s%10s%10s\n", officeCode,city,phone,adressLine1,country,postalCode,territory);
+
+
+
+
+        };
+
         connection.close();
 
 
     }
 
-    public static void exampleUpdate(String city, String phone, String adressLine1, String country, String postalCode, String territory) throws Exception{
-        Connection connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/classicmodels", "root", "123456");
-
-        System.out.println(connection);
-
-//        String values = String.format("VALUES (%s,  %s, %s, %s, %s)", city, phone, adressLine1, postalCode, territory);
-//
-//        System.out.println(values);
-
-        String command = String.format("INSERT INTO offices (city, phone, addressLine1, country, postalCode, territory)\n" +
-                "VALUES ('%s',  '%s', '%s', '%s', '%s', '%s')", city, phone, adressLine1, country, postalCode, territory);
-
-        System.out.println(command);
-
-        Statement statement = connection.createStatement();
 
 
-        int affectedRows = statement.executeUpdate(command);
-
-       connection.close();
-
-    }
 
 
 }
